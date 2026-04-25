@@ -1,0 +1,590 @@
+<!-- makeUrl.html #v2.01 26/04/23 21:13 -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="favicon64.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="favicon180.png">
+    <title>大紫粉嫩丸子工廠</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --purple-main: #6f42c1;
+            --purple-dark: #59359a;
+            --purple-light: #ebe4ff;
+            --purple-superlight: #f3f0ff;
+            --pink-accent: #f0768b;
+            --pink-sweet: #f28ea1;
+            --pink-blossom: #f7d5df;            
+            --pink-light: #fff5f6;
+        }
+
+        /* 確保行動裝置滿版且不縮小 */
+        html,
+        body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: #f8f9fa;
+        }
+
+        body {
+            padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* 修正 iOS Safari 高度問題 */
+            min-height: 100vh;
+        }
+
+        .card {
+            max-width: 400px;
+            margin: auto;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(111, 66, 193, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            background: white;
+            padding: 25px 15px 10px;
+            text-align: center;
+        }
+
+        /* 輸入框容器與清除按鈕 */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #eee;
+            font-size: 16px;
+            transition: all 0.3s;
+            padding-right: 35px;
+        }
+
+        .form-control:focus {
+            border-color: var(--purple-main);
+            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.1);
+        }
+
+        /* 批次輸入框高度 */
+        #urlInput {
+            height: 120px;
+            resize: none;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: #ccc;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 12px;
+            line-height: 20px;
+            cursor: pointer;
+            /*預設隱藏*/
+            display: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        /* 選項樣式：靠右對齊 */
+        .options-group {
+            margin-bottom: 15px;
+            padding-right: 5px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .custom-control-label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #495057;
+            user-select: none;
+        }
+
+        /* 1. 基本狀態：當開關被選取 (Checked) 時的背景與框線 */
+        .custom-control-input:checked ~ .custom-control-label::before {
+            border-color: var(--pink-sweet) !important;
+            background-color: var(--pink-sweet) !important;
+        }
+
+        /* 2. 聚焦狀態 (Focus)：移除藍色光圈，改為粉色半透明陰影 */
+        .custom-control-input:focus ~ .custom-control-label::before {
+            box-shadow: 0 0 0 0.2rem rgba(242, 142, 161, 0.25) !important; /* --pink-sweet 的半透明色 */
+            border-color: var(--pink-sweet) !important;
+        }
+
+        /* 針對非選取狀態下的聚焦外框也進行微調 */
+        .custom-control-input:focus:not(:checked) ~ .custom-control-label::before {
+            border-color: var(--pink-blossom) !important;
+            box-shadow: 0 0 0 0.2rem rgba(247, 213, 223, 0.5) !important;
+        }
+        /* 3. 按住狀態 (Active)：強制移除 Bootstrap 預設的藍色背景與亮點濾鏡 */
+        .custom-control-input:active ~ .custom-control-label::before {
+            background-color: var(--pink-blossom) !important; /* 按住瞬間先顯示淡粉 */
+            border-color: var(--pink-blossom) !important;
+            filter: none !important; 
+        }
+
+        /* 4. 已選取狀態下按住 (Checked + Active)：維持粉色 */
+        .custom-control-input:checked:active ~ .custom-control-label::before {
+            background-color: var(--pink-sweet) !important;
+            border-color: var(--pink-sweet) !important;
+        }       
+
+        /* 做丸子按鈕 (大紫主色) */
+        .btn-primary {
+            background-color: var(--purple-main) !important;
+            border-color: var(--purple-main) !important;
+            height: 50px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        button.btn-primary:disabled {
+            background-color: var(--purple-main) !important;
+            border-color: var(--purple-main) !important;
+            color: white !important;
+            opacity: 1 !important;
+            /* 強制不透明，不顯示 Bootstrap 的淡色 */
+            cursor: wait;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:active {
+            background-color: var(--purple-dark) !important;
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        /* 轉圈圈動畫圖示 */
+        .spinner-border-custom {
+            display: inline-block;
+            width: 1.2rem;
+            height: 1.2rem;
+            /*vertical-align: text-bottom;*/
+            border: 0.2em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-border .75s linear infinite;
+            margin-right: 8px;
+            /* 跟文字拉開距離 */
+        }
+
+        @keyframes spinner-border {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 結果清單容器 */
+        /* #06: 取消列表限制 */
+        #resultList {
+            max-height: none; /* 移除高度限制 */
+            overflow-y: visible; /* 移除內部滾動 */
+            padding: 5px 0;
+        }
+
+        /* 彈跳動畫定義 */
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.08);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-bounce {
+            animation: bounceIn 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+        }
+
+        /* 重新定義標籤位置與樣式 */
+        .ball-card {
+            position: relative; /* 讓內部標籤可以絕對定位 */
+            background: white;
+            border: 3px solid var(--purple-light);
+            border-radius: 15px;
+            padding: 20px 15px 15px; /* 增加上方高度給標籤與號碼 */
+            margin-top: 15px; /* 增加上方間距，給編號留位置 */
+        }
+        
+        .ball-card.success {
+            border-color: var(--purple-light);
+        }
+
+        .ball-card.fail {
+            border-color: #ffeeba;
+        }
+
+        /* 當父層是 fail 時，編號標籤的底色同步變色 */
+        .ball-card.fail .card-id-label {
+            background-color: #ffeeba; /* 跟邊框一樣的黃色 */
+        }
+
+        /* 進度條樣式 */
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+            background-color: #eee;
+            display: none;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            background-color: var(--purple-main);
+        }
+
+        /* 紅框提示區預設隱藏 */
+        #stepReminder {
+            display: none; /* 初始隱藏，JS 判斷後顯示 */
+        }        
+
+        /* 紅框提示區 */
+        .step-highlight {
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            color: white;
+            background-color: var(--pink-accent);
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(240, 118, 139, 0.2);
+        }
+
+        .step-container {
+            text-align: center;
+            margin-top: 7px;
+            margin-bottom: 10px;
+        }
+
+        /* 左上角：號碼 */
+        .card-id-label {
+            position: absolute;
+            top: -11px; /* 往上推，剛好壓在線上 */
+            left: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #495057; /* 深色小字 */
+            background-color: var(--purple-light); /* 使用主紫色作為標題背景 */
+            padding: 0px 8px;
+            border-radius: 8px;
+            z-index: 10;        /* 確保在最上層 */
+            box-shadow: 0px 2px 3px rgba(0,0,0,0.05); /* 增加一點立體感 */            
+        }
+
+        /* 右上角：標籤 */
+        .card-type-tag {
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            background: #adb5bd;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* 縮網址顯示區塊：膠囊樣式 */
+        .finalUrlLink {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: fit-content;
+            margin: 5px auto;           
+            padding: 6px 12px;
+            background: var(--pink-light);
+            border-radius: 50px;
+            border: 2px dashed var(--purple-main);
+            color: var(--purple-main);
+            font-weight: 725;
+            font-size: 1.125rem;
+            text-decoration: none;
+            word-break: break-all;
+            transition: all 0.2s;
+        }
+
+        .finalUrlLink:active {
+            transform: scale(0.97);
+            background: var(--purple-light);
+        }
+ 
+        .finalUrlLink a {
+            color: inherit;
+            text-decoration: none;
+        }                
+
+        .copy-all-btn {
+            width: 100%;
+            height: 45px;
+            border-radius: 10px;
+            background: white;
+            border: 2px solid var(--purple-main);
+            color: var(--purple-main);
+            font-weight: bold;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .copy-all-btn:hover,
+        .copy-all-btn:active {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .copy-all-btn:active {
+            transform: translateY(2px);
+        }  
+        
+        /* 功能按鈕群組：確保 50/50 分配 */
+        .action-btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+            width: 100%;
+        }        
+
+        /* 複製短網址：採用常用商品卡片樣式 */
+        .btn-copy-short {
+            flex: 0.9;
+            background-color: white;
+            border: 1.5px solid #e9ecef;
+            border-radius: 12px;
+            height: 35px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            color: #495057;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }        
+
+        .btn-copy-short:hover,
+        .btn-copy-short:active {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .btn-copy-short:active {
+            transform: translateY(2px);
+        }        
+
+        /* 去購買按鈕：紫色風格 */
+        .btn-go-action {
+            flex: 1.1;
+            background-color: var(--purple-main);
+            color: white !important;
+            border: none;
+            border-radius: 12px;
+            height: 35px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }        
+
+        .btn-go-action:hover,
+        .btn-go-action:active {
+            background-color: var(--purple-dark) !important;
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .btn-go-action:active {
+            transform: translateY(2px);
+        }
+        
+        .text-break {
+            word-break: break-all;
+        }
+        
+        /* 複製原網址按鈕 */
+        .btn-copy-long {
+            width: 100%;
+            background-color: white;
+            color: #495057;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            height: 35px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-copy-long:hover,
+        .btn-copy-long:active {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .btn-copy-long:active {
+            transform: translateY(2px);
+        }        
+
+        /* 常用商品樣式 */
+        .quick-link-btn {
+            margin-bottom: 10px;
+            border-radius: 12px;
+            text-align: left;
+            padding: 12px 15px;
+            background-color: white;
+            border: 1.5px solid #e9ecef;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            text-decoration: none !important;
+            color: #495057 !important;
+        }
+
+        .quick-link-btn:active,
+        .quick-link-btn:hover {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+        }
+
+        .quick-link-btn:active {
+            transform: translateY(2px);
+        }
+
+        .quick-link-text {
+            margin-left: 10px;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        .quick-link-url {
+            font-size: 0.7rem;
+            color: #adb5bd;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div class="card-header-custom">
+            <h5 class="text-center" style="color: #6f42c1; font-weight: bold;">
+                🍡大紫<span style="color: #f0768b;">粉嫩丸子</span><span style="font-size: 0.8em;">工廠</span>
+            </h5>
+            <small class="text-muted">讓您的蝦皮連結又Q又大紫🔗</small>
+        </div>
+        <div class="card-body pt-0">
+            <div class="form-group input-wrapper">
+                <textarea id="urlInput" class="form-control" placeholder="請投入蝦皮網址原料(最多5串)"></textarea>
+                <button id="clearBtn" class="clear-btn">&times;</button>
+            </div>
+
+            <div class="options-group">
+                <div class="custom-control custom-switch mr-3">
+                    <input type="checkbox" class="custom-control-input" id="smartReplace" checked>
+                    <label class="custom-control-label text-secondary" for="smartReplace" style="cursor:pointer">原文換餡加工</label>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="useShorten" checked>
+                    <label class="custom-control-label text-secondary" for="useShorten"
+                        style="cursor:pointer">縮網址糖粉</label>
+                </div>
+            </div>
+
+            <button id="convertBtn" class="btn btn-primary shadow mb-2">開始做丸子</button>
+
+            <button id="copyAllBtn" class="copy-all-btn">🍱 打包全部丸子清單</button>
+
+            <div id="stepReminder" class="step-container animate-bounce">
+                <div class="step-highlight">
+                    ➊刪購物車 ➋關蝦皮APP ➌點下面加購
+                </div>
+            </div>
+
+            <div id="resultList"></div>
+
+            <div id="progressContainer" class="progress shadow-sm">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                    style="width: 0%"></div>
+            </div>            
+
+            <hr class="my-4">
+
+            <h6 class="font-weight-bold mb-3 text-secondary" style="display: flex; align-items: center;">
+                <span
+                    style="background: #6f42c1; width: 4px; height: 42px; display: inline-block; margin-right: 8px; border-radius: 2px;"></span>
+                📍 常用商品 (➊刪購物車 ➋關蝦皮APP ➌點下面加購)
+            </h6>
+
+            <div class="d-flex flex-column">
+                <a href="https://reurl.cc/gnK8kQ?openExternalBrowser=1" target="_blank"
+                    class="quick-link-btn shadow-sm">
+                    <span style="font-size: 1.2rem;">🧻</span>
+                    <div class="quick-link-text"><span>揪探吉</span><span
+                            class="quick-link-url">https://reurl.cc/gnK8kQ</span>
+                    </div>
+                </a>
+                <a href="https://reurl.cc/1ky4rD?openExternalBrowser=1" target="_blank"
+                    class="quick-link-btn shadow-sm">
+                    <span style="font-size: 1.2rem;">🧻</span>
+                    <div class="quick-link-text"><span>好惠買</span><span
+                            class="quick-link-url">https://reurl.cc/1ky4rD</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="text-center mb-1">
+            <small class="text-muted d-block" style="font-size: 12px;">㊙ 丸子會帶有大紫蝦皮分潤 ㊙</small>            
+            <p class="text-center" style="font-size: 10px; color: #ccc;">FACTORY V2.01</p>
+        </div>        
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+const _0x384635=_0x1b6b;(function(_0x2b1ecf,_0x4b3251){const _0x259e6={_0x4b301c:0x234,_0x5e4cb4:0x27e,_0x281154:0x2a8,_0x28ba53:0x2cf,_0x1e22b6:0x2e1,_0x280a35:0x28d},_0x293139=_0x1b6b,_0x34c024=_0x2b1ecf();while(!![]){try{const _0x23e520=parseInt(_0x293139(_0x259e6._0x4b301c))/0x1+parseInt(_0x293139(_0x259e6._0x5e4cb4))/0x2+-parseInt(_0x293139(_0x259e6._0x281154))/0x3*(-parseInt(_0x293139(0x248))/0x4)+-parseInt(_0x293139(_0x259e6._0x28ba53))/0x5+parseInt(_0x293139(0x217))/0x6+-parseInt(_0x293139(_0x259e6._0x1e22b6))/0x7*(-parseInt(_0x293139(0x2cb))/0x8)+-parseInt(_0x293139(_0x259e6._0x280a35))/0x9;if(_0x23e520===_0x4b3251)break;else _0x34c024['push'](_0x34c024['shift']());}catch(_0x3ccbb7){_0x34c024['push'](_0x34c024['shift']());}}}(_0xa33d,0xe3261));const _0x15e5a1=(function(){let _0x2c7a6a=!![];return function(_0x46eec2,_0x469946){const _0x15c8ee={_0x417d89:0x2c3,_0x4f4083:0x2ec},_0x12c2a2=_0x2c7a6a?function(){const _0x44fddf=_0x1b6b;if(_0x469946){if(_0x44fddf(_0x15c8ee._0x417d89)!==_0x44fddf(_0x15c8ee._0x417d89)){const _0x1da76c={_0x7079fd:0x2e6,_0x28c0f9:0x297};let _0x3b0b67=_0x347642;_0x3cafca[_0x44fddf(0x268)](_0x1d8d41=>{const _0x2964e7=_0x44fddf;_0x1d8d41&&(_0x3b0b67=_0x3b0b67[_0x2964e7(_0x1da76c._0x7079fd)](_0x1d8d41[_0x2964e7(_0x1da76c._0x28c0f9)])[_0x2964e7(0x25c)](_0x1d8d41[_0x2964e7(0x2eb)]));}),_0x5b5713(_0x3b0b67,_0x3d5f1f);}else{const _0x4d6c0c=_0x469946[_0x44fddf(_0x15c8ee._0x4f4083)](_0x46eec2,arguments);return _0x469946=null,_0x4d6c0c;}}}:function(){};return _0x2c7a6a=![],_0x12c2a2;};}()),_0x5e7dab=_0x15e5a1(this,function(){const _0x5e9b2a={_0x1b72dd:0x2e7,_0x2189de:0x257},_0x1c2100=_0x1b6b;return _0x5e7dab['toString']()[_0x1c2100(0x257)](_0x1c2100(0x241))[_0x1c2100(_0x5e9b2a._0x1b72dd)]()['constructor'](_0x5e7dab)[_0x1c2100(_0x5e9b2a._0x2189de)]('(((.+)+)+)+$');});_0x5e7dab();function _0x1b6b(_0x17b55e,_0x19485f){_0x17b55e=_0x17b55e-0x1e8;const _0x41cbb1=_0xa33d();let _0xb16720=_0x41cbb1[_0x17b55e];return _0xb16720;}function _0xa33d(){const _0x3bfbfb=['smQsz','redir','YwEwm','redir=https%3A%2F%2Fsv.shopee.tw','substring','</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','N/A','action','display','add','trim','</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','code','ramCW','\x27,\x20\x27_blank\x27)\x22>🚀\x20','UXMnL','beforeend','progressContainer','sv.shopee.tw','collections','test','https://sv.shopee.tw','clipboard','textarea','progress-bar-striped','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22action-btn-group\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-go-action\x22\x20onclick=\x22window.open(\x27','startsWith','1529791zRyMle','promotionId','captcha','?url=','https://idgame.shopee.tw','push','resultList','random','</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22action-btn-group\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-copy-short\x22\x20onclick=\x22copyToClipboard(\x27','stateObject','gger','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22finalUrlLink\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22','keyword','(((.+)+)+)+$','BogzV','&tid=','querySelector','https://games.shopee.tw','addEventListener','from','876OjoIRz','signature','到此頁','XboFV','QUNVY','https','https://live.shopee.tw','gZvWi','\x22\x20target=\x22_blank\x22\x20class=\x22text-break\x20small\x20text-secondary\x22>','⚠️\x20偵測到蝦皮要求登入！網址為:','checked','</small>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22mt-2\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn\x20btn-sm\x20btn-outline-secondary\x20w-100\x22\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20onclick=\x22retryOneBall(\x27','eamMB','insertAdjacentHTML','直播粉嫩丸子','search','login','重捏失敗：','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn\x20btn-sm\x20btn-link\x20p-0\x20text-secondary\x22\x20type=\x22button\x22\x20data-toggle=\x22collapse\x22\x20data-target=\x22#longUrlCollapseRetry','個網址原料，最多一次','join','robot','smartReplace','shopee.tw/collections','timeout','sgAtc','has','product','live','finalUrl','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22action-btn-group\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-go-action\x22\x20onclick=\x22window.open(\x27','progress-bar-animated','forEach','host_avatar','2279420','gEEZS','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22card-type-tag\x22\x20style=\x22background:#ccc\x22>失敗</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<strong>😵製作失敗😵</strong><br>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<small\x20class=\x22text-danger\x22>','smooth','block','preSource','WaHjm','match','remove','counter','innerText','蒸煮烤...','get','撒粉中...','網址被蝦皮擋住了\x20(需真人驗證)','開始做丸子','?c=share_web&shareUserId=','progressBar','⚠️\x20偵測到蝦皮驗證牆！網址為:','clearBtn','963120kJxzef','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22height:\x2010px;\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','tid','https://s.shopee.tw','DjEgO','click','https://tw.shp.ee','ilbeX','live.shopee.tw','stepReminder','disabled','短影音粉嫩丸子','message','\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22spinner-border-custom\x22></span>','transformedUrl','12829932aeLCgA','網址有誤或商品已下架/刪除','debu','.text-danger','活動頁粉嫩丸子','⚠️請輸入蝦皮網址',',\x20this)\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20🔄\x20重捏這顆\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','.ball-card','<span\x20class=\x22spinner-border-custom\x22></span>\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20丸子#','https://shp.ee','original','yhrfK','displayUrl','揉麵糰...','closest','select','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20style=\x22height:\x2010px;\x22></div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','while\x20(true)\x20{}','TUrcj','writeText','rlUdV','redir=','qliXz','includes','PpVEZ','\x27,\x20this)\x22>📋\x20複製</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-go-action\x22\x20onclick=\x22window.open(\x27','shopee.tw','4623ChKVqD','<span\x20class=\x22spinner-border-custom\x22></span>⏳重捏中...','\x5c+\x5c+\x20*(?:[a-zA-Z_$][0-9a-zA-Z_$]*)','\x0a🍡麵糰沒揉好，請檢查網址是否正確！','shopee.tw/search','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22ball-card\x20success\x20shadow-sm\x20animate-bounce\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22card-id-label\x22>丸子\x20#','</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22card-type-tag\x22>','function\x20*\x5c(\x20*\x5c)','<div\x20id=\x22card-fail-','liZZI','📝\x20打包換餡後的原文','type','集合頁粉嫩丸子','tid:','append','warn','⚠️第','ULwTl','UmiHZ','偵測到','去購買','convertBtn','\x27,\x20this)\x22>📋複製原長網址</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','🍱\x20打包全部丸子清單','onclick','data','init','BLjNV','搜尋粉嫩丸子','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22finalUrlLink\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22','fill','複製失敗','淋醬汁...','value','&affiliate_id=','56XtmnEZ','✅已複製','\x20/\x20','zGLvT','9234535aFUeQM','dVlmW','chain','arMgY','XNNJa','string','</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-copy-long\x22\x20onclick=\x22copyToClipboard(\x27','HxweW','filter','HCEwm','VYSIR','promotionId=','error_page','appendChild','🔄\x20重捏失敗，再試一次','?openExternalBrowser=1\x22>','classList','zzynW','1171331eseTXB','typeText','length','createElement','ball-card\x20success\x20shadow-sm\x20animate-bounce','split','toString','focus','width','優惠券粉嫩丸子','replaceTo','apply','\x0a🍡機器停電，請檢查網路插頭有插好嗎','input','https://script.google.com/macros/s/AKfycbwaTlTHRzU5kTge0LzbGyo7l8UMcngAwNYZtLfhITwqLXWXYKJa70BtV869MEZIE4u5yA/exec','網址追蹤失敗','\x27,\x20','\x0a🍡丸子烤焦了，請再試一次！(連線超時)','cwCgy','host_user_id','body','voucher','scrollTo','tmfJi','isProduct','網址被蝦皮擋住了\x20(需登入)','UwbAB','PnYAU','evcode=','nUvHE','alEUb','removeChild','style','copyAllBtn','useShorten','ECONNABORTED','<button\x20class=\x22btn\x20btn-sm\x20btn-link\x20p-0\x20text-secondary\x22\x20type=\x22button\x22\x20data-toggle=\x22collapse\x22\x20data-target=\x22#longUrlCollapse','some','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22card-id-label\x22>丸子\x20#','\x22>\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22p-2\x20border\x20rounded\x20bg-light\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22','\x22>\x20\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22p-2\x20border\x20rounded\x20bg-light\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<a\x20href=\x22','</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-copy-long\x22\x20onclick=\x22copyToClipboard(\x27','constructor','\x20tid:','https://s.shopee.tw/an_redir?origin_link=','https://shopee.tw','slice','\x22\x20class=\x22ball-card\x20fail\x20shadow-sm\x20animate-bounce\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22card-id-label\x22>丸子\x20#','room_id','getElementById','</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22action-btn-group\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-copy-short\x22\x20onclick=\x22copyToClipboard(\x27','https://shopee.tw/product/','pDxTq','video','idgame.shopee.tw','&shorten=true','rXGOc','串竹籤...','execCommand','innerHTML','none','bOquY','TEPpB','4096170eVDBha','shortUrl'];_0xa33d=function(){return _0x3bfbfb;};return _0xa33d();}const _0x256b22=(function(){let _0x2ccd2e=!![];return function(_0x2eb00a,_0x39c87b){const _0x16ef0c=_0x2ccd2e?function(){const _0x49db85=_0x1b6b;if(_0x39c87b){const _0x156ef0=_0x39c87b[_0x49db85(0x2ec)](_0x2eb00a,arguments);return _0x39c87b=null,_0x156ef0;}}:function(){};return _0x2ccd2e=![],_0x16ef0c;};}());(function(){const _0x341dd8={_0x98dc73:0x2c2,_0x464717:0x22d,_0x5419d3:0x2d1,_0x1be599:0x297,_0x523109:0x25c};_0x256b22(this,function(){const _0x456e8f=_0x1b6b,_0x4d34de=new RegExp(_0x456e8f(0x2af)),_0x42cef6=new RegExp('\x5c+\x5c+\x20*(?:[a-zA-Z_$][0-9a-zA-Z_$]*)','i'),_0x41719b=_0xb16720(_0x456e8f(_0x341dd8._0x98dc73));!_0x4d34de[_0x456e8f(_0x341dd8._0x464717)](_0x41719b+_0x456e8f(_0x341dd8._0x5419d3))||!_0x42cef6[_0x456e8f(_0x341dd8._0x464717)](_0x41719b+'input')?_0x41719b('0'):_0x456e8f(0x2ba)!==_0x456e8f(0x219)?_0xb16720():_0x451b94&&(_0x485fff=_0x3c103e['split'](_0x547ca2[_0x456e8f(_0x341dd8._0x1be599)])[_0x456e8f(_0x341dd8._0x523109)](_0x49473d['replaceTo']));})();}());const MAX_INPUT_LINKS=0x5,GAS_URL=_0x384635(0x2ef),CF_WORKER_URL='https://maruko-fetcher.iamwahahao.workers.dev/',loadingTexts=[_0x384635(0x29a),_0x384635(0x211),_0x384635(0x275),_0x384635(0x2c8),_0x384635(0x277)];let originalFullText='',urlMapping=[],successLinks=[];const urlInput=document['getElementById']('urlInput'),clearBtn=document[_0x384635(0x209)](_0x384635(0x27d)),convertBtn=document[_0x384635(0x209)](_0x384635(0x2bd)),resultList=document[_0x384635(0x209)](_0x384635(0x23a)),progressContainer=document[_0x384635(0x209)](_0x384635(0x22a)),progressBar=document[_0x384635(0x209)](_0x384635(0x27b)),copyAllBtn=document[_0x384635(0x209)](_0x384635(0x1f9));urlInput[_0x384635(0x246)](_0x384635(0x2ee),()=>{const _0x536421={_0x49abd2:0x221},_0x158d65=_0x384635;clearBtn['style'][_0x158d65(_0x536421._0x49abd2)]=urlInput[_0x158d65(0x2c9)]?'block':_0x158d65(0x214);}),clearBtn[_0x384635(0x246)](_0x384635(0x283),()=>{const _0x5d91f3={_0x1e2be1:0x2c9,_0x38ae98:0x1f8},_0x59ff3b=_0x384635;urlInput[_0x59ff3b(_0x5d91f3._0x1e2be1)]='',clearBtn[_0x59ff3b(_0x5d91f3._0x38ae98)][_0x59ff3b(0x221)]=_0x59ff3b(0x214),urlInput[_0x59ff3b(0x2e8)]();});async function copyToClipboard(_0x2c8c62,_0x128589){const _0x35737e={_0x120af8:0x226,_0x19d278:0x2a0,_0x41e133:0x22f,_0xe8711d:0x2ab,_0x155f98:0x1f5,_0x36c25a:0x2e4,_0x13f6c0:0x1ec,_0x577301:0x2dc,_0xcff2eb:0x29c,_0x74c9c6:0x2de,_0xf3e8db:0x2bc,_0xd0604b:0x2b1,_0x3fad55:0x2b1,_0x5d3b11:0x2c7},_0x1deaea=_0x384635;try{if(_0x1deaea(_0x35737e._0x120af8)===_0x1deaea(_0x35737e._0x120af8)){if(navigator['clipboard']&&navigator[_0x1deaea(0x22f)][_0x1deaea(_0x35737e._0x19d278)])_0x1deaea(0x2d3)!==_0x1deaea(0x24f)?await navigator[_0x1deaea(_0x35737e._0x41e133)]['writeText'](_0x2c8c62):_0x58a644+=_0x1deaea(_0x35737e._0xe8711d);else{if(_0x1deaea(0x1f5)===_0x1deaea(_0x35737e._0x155f98)){const _0x54afaf=document[_0x1deaea(_0x35737e._0x36c25a)](_0x1deaea(0x230));_0x54afaf[_0x1deaea(0x2c9)]=_0x2c8c62,document[_0x1deaea(_0x35737e._0x13f6c0)][_0x1deaea(_0x35737e._0x577301)](_0x54afaf),_0x54afaf[_0x1deaea(_0x35737e._0xcff2eb)](),document[_0x1deaea(0x212)]('copy'),document['body'][_0x1deaea(0x1f7)](_0x54afaf);}else _0x5a62c2['innerText']='📝\x20打包換餡後的原文';}const _0x1d4c89=_0x128589[_0x1deaea(0x274)];_0x128589[_0x1deaea(0x274)]=_0x1deaea(0x2cc);}else _0x43679d+=_0x1deaea(0x2c5)+_0x36cb54['displayUrl']+_0x1deaea(_0x35737e._0x74c9c6)+_0xafbf2[_0x1deaea(0x299)]+'</a>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22action-btn-group\x22>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-copy-short\x22\x20onclick=\x22copyToClipboard(\x27'+_0x92f250[_0x1deaea(0x299)]+'\x27,\x20this)\x22>📋\x20複製</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-go-action\x22\x20onclick=\x22window.open(\x27'+_0x3a80c6[_0x1deaea(0x28c)]+_0x1deaea(0x227)+(_0x35623c['isProduct']?_0x1deaea(_0x35737e._0xf3e8db):_0x1deaea(0x24a))+_0x1deaea(0x224);}catch(_0xca2d2c){_0x1deaea(_0x35737e._0xd0604b)!==_0x1deaea(_0x35737e._0x3fad55)?_0x2e8117[_0x1deaea(0x2b6)](_0x12155d,_0x49184e['get'](_0x3dcd2d)):alert(_0x1deaea(_0x35737e._0x5d3b11));}}convertBtn[_0x384635(0x246)](_0x384635(0x283),async()=>{const _0x120d24={_0x47aa9b:0x271,_0x1f4916:0x247,_0x2bc637:0x2e3,_0x67c4bd:0x2e3,_0x4139e6:0x210,_0xc7334a:0x25b,_0x5bea05:0x296,_0xd6f0b4:0x24e,_0xed0127:0x22e,_0x266961:0x245,_0x435439:0x26b,_0x476dda:0x29f,_0x4e63b2:0x2b8,_0x267b02:0x2c6,_0x2d7d39:0x209,_0x4f318f:0x25e,_0x5926fd:0x214,_0x19576c:0x24c,_0x1307fa:0x274,_0x59628f:0x299,_0x4ccdda:0x221,_0x1e638a:0x2e9,_0x12a78b:0x231,_0x23f70a:0x267,_0x185e26:0x2d0,_0x3e9980:0x1f0,_0x41ac5b:0x2ae,_0x251fcf:0x2e2,_0x4759c3:0x29d,_0xe3fe7a:0x233,_0x14791b:0x1ea,_0x11d40d:0x2de,_0x28ca43:0x20a,_0x44d6de:0x28c,_0x546bf8:0x2bc,_0x36df53:0x297,_0x1f7f2f:0x25c,_0x4abc22:0x2eb,_0x242406:0x266,_0x38c516:0x28c,_0x5ac33e:0x227,_0x1616ab:0x1f0,_0x508dfe:0x1fc,_0x4c4342:0x1ff,_0x2db308:0x250,_0x1a883d:0x28c,_0x48e2c5:0x229,_0x5cbb96:0x233,_0x3d915d:0x239,_0x508362:0x239,_0x7c2556:0x233,_0x144ee2:0x24d,_0x2429c5:0x2e2,_0x4d90e6:0x280,_0x2abf75:0x2b5,_0x4361cf:0x2e0,_0x18e6ba:0x1fb,_0x2ff248:0x28a,_0x45129e:0x260,_0x5c5ee8:0x2bb,_0x37652f:0x2f0,_0x5b77d7:0x1f6,_0x2d94e4:0x1f1,_0x1cfcc3:0x2b0,_0x58c446:0x207,_0x166f8a:0x26c,_0x1dd50b:0x2e9,_0x2f91e7:0x2e3,_0x2c98e8:0x2e3,_0x4441a3:0x272,_0x5bbe24:0x267,_0x71369:0x288,_0x4b2c60:0x279,_0x41e88b:0x288,_0x4c204e:0x1fd,_0x210197:0x1f8,_0x3fce12:0x26e},_0x1032b2={_0x164613:0x1f8,_0x2f941c:0x214},_0x21aa7e={_0x2f7531:0x295},_0x183019=_0x384635,_0x2a31e4=/https:\/\/[^\s\n\r]+(?<![，。！；？、,;!?\.])/g;let _0x5e00fc=urlInput[_0x183019(0x2c9)][_0x183019(_0x120d24._0x47aa9b)](_0x2a31e4)||[],_0x3d164d=_0x5e00fc['map'](_0x13508e=>_0x13508e[_0x183019(0x223)]())['filter'](_0x3f02f3=>_0x3f02f3!==''),_0x459590=Array[_0x183019(_0x120d24._0x1f4916)](new Set(_0x3d164d));if(_0x459590[_0x183019(_0x120d24._0x2bc637)]===0x0)return alert(_0x183019(0x292));if(_0x5e00fc[_0x183019(_0x120d24._0x67c4bd)]>MAX_INPUT_LINKS)return _0x183019(_0x120d24._0x4139e6)!==_0x183019(0x2ce)?alert(_0x183019(0x2bb)+_0x5e00fc[_0x183019(0x2e3)]+_0x183019(_0x120d24._0xc7334a)+MAX_INPUT_LINKS+'個'):_0x429cb9;_0x459590[_0x183019(0x206)](0x0,MAX_INPUT_LINKS);const _0x2b2a78=[_0x183019(0x284),_0x183019(0x205),_0x183019(0x281),_0x183019(_0x120d24._0x5bea05),_0x183019(_0x120d24._0xd6f0b4),_0x183019(_0x120d24._0xed0127),_0x183019(0x238),_0x183019(_0x120d24._0x266961)];for(let _0x4738c1=0x0;_0x4738c1<_0x459590[_0x183019(_0x120d24._0x67c4bd)];_0x4738c1++){if(_0x183019(_0x120d24._0x435439)===_0x183019(_0x120d24._0x476dda))_0x22b3a9['push'](_0x47444c['typeText']+'：'+_0x3fe83d[_0x183019(0x28c)]);else{if(!_0x2b2a78['some'](_0x40d1e2=>_0x459590[_0x4738c1][_0x183019(0x233)](_0x40d1e2)))return alert(_0x183019(_0x120d24._0x4e63b2)+(_0x4738c1+0x1)+'個網址格式錯誤，請輸入蝦皮網址\x0a'+_0x459590[_0x4738c1]);}}originalFullText=urlInput[_0x183019(0x2c9)],urlMapping=new Array(_0x459590[_0x183019(0x2e3)])[_0x183019(_0x120d24._0x267b02)](null),successLinks=new Array(_0x459590[_0x183019(0x2e3)])['fill'](null);const _0xdfe58c=document[_0x183019(_0x120d24._0x2d7d39)](_0x183019(_0x120d24._0x4f318f))['checked'];convertBtn['disabled']=!![],urlInput[_0x183019(0x288)]=!![],document['getElementById']('useShorten')[_0x183019(0x288)]=!![],resultList['innerHTML']='',document[_0x183019(_0x120d24._0x2d7d39)]('stepReminder')['style'][_0x183019(0x221)]=_0x183019(_0x120d24._0x5926fd),successLinks=[];_0xdfe58c?copyAllBtn[_0x183019(0x274)]=_0x183019(0x2b2):_0x183019(0x1f3)!==_0x183019(_0x120d24._0x19576c)?copyAllBtn[_0x183019(_0x120d24._0x1307fa)]=_0x183019(0x2bf):_0x253e70[_0x183019(0x239)](_0x2580a7[_0x183019(0x2e2)]+'：'+_0x29ae45[_0x183019(_0x120d24._0x59628f)]);copyAllBtn['style'][_0x183019(_0x120d24._0x4ccdda)]=_0x183019(_0x120d24._0x5926fd),progressContainer[_0x183019(0x1f8)]['display']='flex',progressBar[_0x183019(0x1f8)][_0x183019(_0x120d24._0x1e638a)]='0%',progressBar[_0x183019(0x2df)][_0x183019(0x222)](_0x183019(_0x120d24._0x12a78b),_0x183019(_0x120d24._0x23f70a));for(let _0x40cc89=0x0;_0x40cc89<_0x459590[_0x183019(_0x120d24._0x2bc637)];_0x40cc89++){if(_0x183019(_0x120d24._0x185e26)!=='dVlmW'){_0x879af1[_0x183019(0x280)]=_0x26bf43;throw _0xb68d2f;}else{let _0x52c84e=_0x459590[_0x40cc89],_0x166c98=0x0;const _0xebd4b8=setInterval(()=>{const _0x2fefd5=_0x183019;convertBtn[_0x2fefd5(0x213)]=_0x2fefd5(_0x21aa7e._0x2f7531)+(_0x40cc89+0x1)+_0x2fefd5(0x2cd)+_0x459590[_0x2fefd5(0x2e3)]+':\x20'+loadingTexts[_0x166c98%loadingTexts[_0x2fefd5(0x2e3)]]+_0x2fefd5(0x28b),_0x166c98++;},0x3e8);try{if(_0x183019(0x21b)==='YwEwm'){const _0x392d77=await processOneUrl(_0x52c84e);clearInterval(_0xebd4b8);_0x392d77[_0x183019(_0x120d24._0x3e9980)]&&(document[_0x183019(0x209)]('stepReminder')['style'][_0x183019(0x221)]='block');let _0x5abb6a=_0x183019(0x2ad)+(_0x40cc89+0x1)+_0x183019(_0x120d24._0x41ac5b)+_0x392d77[_0x183019(_0x120d24._0x251fcf)]+_0x183019(_0x120d24._0x4759c3);_0x392d77['displayUrl'][_0x183019(_0x120d24._0xe3fe7a)](_0x183019(0x24d))?'UXNUx'!==_0x183019(_0x120d24._0x14791b)?_0x5abb6a+=_0x183019(0x23f)+_0x392d77['displayUrl']+_0x183019(_0x120d24._0x11d40d)+_0x392d77['displayUrl']+_0x183019(_0x120d24._0x28ca43)+_0x392d77['displayUrl']+_0x183019(0x2a6)+_0x392d77[_0x183019(_0x120d24._0x44d6de)]+'\x27,\x20\x27_blank\x27)\x22>🚀\x20'+(_0x392d77['isProduct']?_0x183019(_0x120d24._0x546bf8):'到此頁')+'</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>':_0x149eb9=_0x342283[_0x183019(0x2e6)](_0x2c75c7[_0x183019(_0x120d24._0x36df53)])[_0x183019(_0x120d24._0x1f7f2f)](_0x112978[_0x183019(_0x120d24._0x4abc22)]):_0x5abb6a+=_0x183019(_0x120d24._0x242406)+_0x392d77[_0x183019(_0x120d24._0x38c516)]+_0x183019(_0x120d24._0x5ac33e)+(_0x392d77[_0x183019(_0x120d24._0x1616ab)]?_0x183019(0x2bc):'到此頁')+_0x183019(0x21e);_0x5abb6a+=_0x183019(_0x120d24._0x508dfe)+(_0x40cc89+0x1)+'\x22>[\x20+\x20查看原長網址\x20]</button>',_0x5abb6a+='<div\x20class=\x22collapse\x20mt-2\x22\x20id=\x22longUrlCollapse'+(_0x40cc89+0x1)+_0x183019(_0x120d24._0x4c4342)+_0x392d77['transformedUrl']+_0x183019(_0x120d24._0x2db308)+_0x392d77[_0x183019(0x28c)]+_0x183019(0x201)+_0x392d77[_0x183019(_0x120d24._0x1a883d)]+_0x183019(0x2be),resultList['insertAdjacentHTML'](_0x183019(_0x120d24._0x48e2c5),_0x5abb6a);_0x392d77[_0x183019(0x299)][_0x183019(_0x120d24._0x5cbb96)](_0x183019(0x24d))?successLinks[_0x183019(_0x120d24._0x3d915d)](_0x392d77[_0x183019(_0x120d24._0x251fcf)]+'：'+_0x392d77[_0x183019(0x299)]):successLinks[_0x183019(_0x120d24._0x508362)](_0x392d77[_0x183019(_0x120d24._0x251fcf)]+'：'+_0x392d77[_0x183019(0x28c)]);const _0x1fbbff=_0x392d77['displayUrl'][_0x183019(_0x120d24._0x7c2556)](_0x183019(_0x120d24._0x144ee2))?_0x392d77[_0x183019(0x299)]:_0x392d77[_0x183019(0x28c)];urlMapping[_0x40cc89]={'original':_0x52c84e,'replaceTo':_0x1fbbff},successLinks[_0x40cc89]=_0x392d77[_0x183019(_0x120d24._0x2429c5)]+'：'+_0x1fbbff;}else _0x1f7881['innerText']='🍱\x20打包全部丸子清單';}catch(_0x4bea3d){clearInterval(_0xebd4b8);const _0x115be3=_0x4bea3d[_0x183019(_0x120d24._0x4d90e6)]||_0x183019(0x21f);let _0x165c35='工廠機器故障：'+_0x4bea3d[_0x183019(0x28a)]+_0x183019(_0x120d24._0x2abf75)+_0x115be3;if(_0x4bea3d['message']==='Network\x20Error')_0x183019(_0x120d24._0x4361cf)==='MBWLG'?_0x5ef29a+=_0x183019(0x1e9):_0x165c35+=_0x183019(0x2ed);else{if(_0x4bea3d['code']===_0x183019(_0x120d24._0x18e6ba)||_0x4bea3d[_0x183019(_0x120d24._0x2ff248)][_0x183019(0x2a4)](_0x183019(_0x120d24._0x45129e))){if(_0x183019(0x282)===_0x183019(0x282))_0x165c35+=_0x183019(0x1e9);else return _0x423ba3(_0x183019(_0x120d24._0x5c5ee8)+_0x104ddc[_0x183019(_0x120d24._0x2bc637)]+_0x183019(_0x120d24._0xc7334a)+_0x5978a8+'個');}else{if(_0x4bea3d[_0x183019(0x28a)][_0x183019(0x2a4)](_0x183019(_0x120d24._0x37652f))){if(_0x183019(_0x120d24._0x5b77d7)!==_0x183019(0x261))_0x165c35+=_0x183019(0x2ab);else{_0x28ffd2[_0x183019(0x2b7)](_0x183019(0x251),_0x80b64c);throw new _0x57d080(_0x183019(_0x120d24._0x2d94e4));}}}}let _0x2ab95a=_0x183019(_0x120d24._0x1cfcc3)+_0x40cc89+_0x183019(_0x120d24._0x58c446)+(_0x40cc89+0x1)+_0x183019(_0x120d24._0x166f8a)+_0x165c35+_0x183019(0x253)+_0x52c84e+_0x183019(0x1e8)+_0x40cc89+_0x183019(0x293);resultList[_0x183019(0x255)](_0x183019(_0x120d24._0x48e2c5),_0x2ab95a);}progressBar[_0x183019(0x1f8)][_0x183019(_0x120d24._0x1dd50b)]=(_0x40cc89+0x1)/_0x459590[_0x183019(_0x120d24._0x2f91e7)]*0x64+'%',window[_0x183019(0x1ee)]({'top':document['body']['scrollHeight'],'behavior':_0x183019(0x26d)});if(_0x40cc89<_0x459590[_0x183019(_0x120d24._0x2c98e8)]-0x1)await new Promise(_0x414c01=>setTimeout(_0x414c01,0x3e8));}}progressBar[_0x183019(0x2df)][_0x183019(_0x120d24._0x4441a3)](_0x183019(0x231),_0x183019(_0x120d24._0x5bbe24)),setTimeout(()=>{const _0x4f45ac=_0x183019;progressContainer[_0x4f45ac(_0x1032b2._0x164613)]['display']=_0x4f45ac(_0x1032b2._0x2f941c);},0xbb8),convertBtn[_0x183019(_0x120d24._0x71369)]=![],convertBtn[_0x183019(0x274)]=_0x183019(_0x120d24._0x4b2c60),urlInput[_0x183019(_0x120d24._0x71369)]=![],document[_0x183019(_0x120d24._0x2d7d39)](_0x183019(0x1fa))[_0x183019(_0x120d24._0x41e88b)]=![];if(successLinks[_0x183019(_0x120d24._0x4c204e)](_0x5908b1=>_0x5908b1!==null))copyAllBtn[_0x183019(_0x120d24._0x210197)]['display']=_0x183019(_0x120d24._0x3fce12);}),copyAllBtn[_0x384635(0x2c0)]=()=>{const _0x2a5b7e={_0x255614:0x25e,_0x2e3906:0x252,_0x186c52:0x2d7,_0x18c7ca:0x2ab,_0x4fb4b4:0x216,_0x4e6b64:0x25c},_0x47105c={_0x497a5f:0x209,_0x14789b:0x25c},_0x2a1347=_0x384635,_0x9a4ff7=document['getElementById'](_0x2a1347(_0x2a5b7e._0x255614))[_0x2a1347(_0x2a5b7e._0x2e3906)],_0x1e30e3=urlMapping[_0x2a1347(_0x2a5b7e._0x186c52)](_0x9713b5=>_0x9713b5!==null),_0x3559ed=successLinks['filter'](_0x100ec2=>_0x100ec2!==null);if(_0x9a4ff7){if(_0x2a1347(0x215)!==_0x2a1347(0x215))_0x1d5946+=_0x2a1347(_0x2a5b7e._0x18c7ca);else{let _0x45dfe7=originalFullText;_0x1e30e3['forEach'](_0x311d51=>{const _0x3b6fb6=_0x2a1347;'XRsFn'===_0x3b6fb6(0x2a1)?_0x15044c[_0x3b6fb6(_0x47105c._0x497a5f)](_0x3b6fb6(0x287))[_0x3b6fb6(0x1f8)]['display']='block':_0x311d51&&(_0x45dfe7=_0x45dfe7[_0x3b6fb6(0x2e6)](_0x311d51['original'])[_0x3b6fb6(_0x47105c._0x14789b)](_0x311d51['replaceTo']));}),copyToClipboard(_0x45dfe7,copyAllBtn);}}else _0x2a1347(_0x2a5b7e._0x4fb4b4)!==_0x2a1347(0x2b9)?copyToClipboard('🍡\x20我的丸子拼盤：\x0a'+_0x3559ed[_0x2a1347(_0x2a5b7e._0x4e6b64)]('\x0a'),copyAllBtn):_0x3ccb4a=_0x497f84;};async function processOneUrl(_0x550f1e){const _0x5d2913={_0x401016:0x1fa,_0x21ed61:0x252,_0x396550:0x23b,_0x47c1f5:0x2e7,_0x2eb53f:0x237,_0x59da97:0x243,_0xe0a55c:0x2c1,_0x4e1f64:0x2a4,_0x442f8e:0x258,_0x2d01c3:0x298,_0x4b2843:0x251,_0x5e1235:0x28f,_0x334f43:0x23e,_0x566d38:0x23d,_0x42ba11:0x25d,_0x2c256a:0x236,_0x37d338:0x2b7,_0x1896e3:0x27c,_0x353042:0x278,_0x19bae0:0x2db,_0xbdb0d1:0x28e,_0x22ad8d:0x2a4,_0xba869d:0x21c,_0x3e14b7:0x1f4,_0x2e6b1b:0x2a4,_0x387f4c:0x25f,_0xd45ad5:0x20e,_0x45c9ff:0x257,_0x57eac9:0x1ed,_0x20fadb:0x22c,_0x253183:0x263,_0x2610ef:0x256,_0x46196b:0x2e6,_0x4870d1:0x2e6,_0x53d22f:0x269,_0x327994:0x204,_0x5edd56:0x289,_0x1843af:0x2a2,_0x166420:0x2ca,_0xb66997:0x1ed,_0x4150b4:0x2ea,_0x543698:0x2e6,_0x4948e2:0x240,_0x1b068f:0x235,_0x1c5306:0x2e6,_0x2f7100:0x20b,_0x3e6174:0x285,_0x10b09b:0x23f,_0x4f93e0:0x299,_0x2a4231:0x2de,_0x8e766a:0x20a,_0x319d90:0x2a6,_0x12988b:0x1f0,_0x2c48b1:0x24a,_0x144416:0x2d6,_0x1ab841:0x2a3},_0x274aad={_0x18e7cd:0x1ef,_0xc0cabf:0x1ef},_0x5c4557={_0x4d0558:0x262,_0x126b7a:0x2b6,_0x404005:0x276},_0x2a9ada=_0x384635,_0x2a3207=document['getElementById'](_0x2a9ada(_0x5d2913._0x401016))[_0x2a9ada(_0x5d2913._0x21ed61)],_0x4358e8=Math[_0x2a9ada(_0x5d2913._0x396550)]()[_0x2a9ada(_0x5d2913._0x47c1f5)](0x24)[_0x2a9ada(0x21d)](0x7);try{const _0xd7b7f0=await axios[_0x2a9ada(0x276)](CF_WORKER_URL+_0x2a9ada(_0x5d2913._0x2eb53f)+encodeURIComponent(_0x550f1e)+_0x2a9ada(_0x5d2913._0x59da97)+_0x4358e8,{'timeout':0x4e20});if(!_0xd7b7f0[_0x2a9ada(0x2c1)][_0x2a9ada(0x265)])throw new Error(_0x2a9ada(0x2f0));let _0x2be2ce=_0xd7b7f0[_0x2a9ada(_0x5d2913._0xe0a55c)][_0x2a9ada(0x265)];if(_0x2be2ce[_0x2a9ada(_0x5d2913._0x4e1f64)](_0x2a9ada(_0x5d2913._0x442f8e))){if(_0x2a9ada(_0x5d2913._0x2d01c3)!==_0x2a9ada(0x1f2)){console[_0x2a9ada(0x2b7)](_0x2a9ada(_0x5d2913._0x4b2843),_0x2be2ce);throw new Error('網址被蝦皮擋住了\x20(需登入)');}else(function(){return![];}['constructor'](_0x2a9ada(_0x5d2913._0x5e1235)+_0x2a9ada(_0x5d2913._0x334f43))['apply'](_0x2a9ada(_0x5d2913._0x566d38)));}if(_0x2be2ce[_0x2a9ada(0x2a4)](_0x2a9ada(_0x5d2913._0x42ba11))||_0x2be2ce[_0x2a9ada(_0x5d2913._0x4e1f64)](_0x2a9ada(_0x5d2913._0x2c256a))){console[_0x2a9ada(_0x5d2913._0x37d338)](_0x2a9ada(_0x5d2913._0x1896e3),_0x2be2ce);throw new Error(_0x2a9ada(_0x5d2913._0x353042));}if(_0x2be2ce[_0x2a9ada(0x2a4)](_0x2a9ada(_0x5d2913._0x19bae0)))throw new Error(_0x2a9ada(_0x5d2913._0xbdb0d1));const _0x18e07f='16394200001',_0x549401=_0x2a9ada(0x26a);let _0x4ccc6f='',_0x1010e3=![];const _0x36fd2e=_0x2be2ce['includes'](_0x2a9ada(0x286)),_0x335fb3=_0x2be2ce[_0x2a9ada(_0x5d2913._0x22ad8d)](_0x2a9ada(0x22b))||_0x2be2ce[_0x2a9ada(_0x5d2913._0x22ad8d)](_0x2a9ada(_0x5d2913._0xba869d)),_0x5d2757=_0x2be2ce[_0x2a9ada(0x2a4)](_0x2a9ada(_0x5d2913._0x3e14b7))&&_0x2be2ce[_0x2a9ada(0x2a4)](_0x2a9ada(0x2da)),_0x507b94=_0x2be2ce[_0x2a9ada(_0x5d2913._0x2e6b1b)](_0x2a9ada(0x2ac))&&!_0x5d2757,_0x113c97=_0x2be2ce[_0x2a9ada(_0x5d2913._0x2e6b1b)]('shopee.tw/voucher')||_0x5d2757,_0x3cdf71=_0x2be2ce[_0x2a9ada(_0x5d2913._0x2e6b1b)](_0x2a9ada(_0x5d2913._0x387f4c)),_0x4aa18f=_0x2be2ce['includes'](_0x2a9ada(_0x5d2913._0xd45ad5))||_0x2be2ce['includes']('games.shopee.tw'),_0x2fb716=/shopee\.tw\/.*i\.(\d+)\.(\d+)|shopee\.tw\/product\/(\d+)\/(\d+)|shopee\.tw\/[^/]+\/(\d+)\/(\d+)/,_0x34d2c1=_0x2be2ce[_0x2a9ada(0x271)](_0x2fb716);let _0x591dbd='粉嫩丸子',_0x1c9894='other';if(_0x36fd2e)_0x1c9894=_0x2a9ada(0x264);else{if(_0x335fb3)_0x1c9894=_0x2a9ada(0x20d);else{if(_0x507b94)_0x1c9894=_0x2a9ada(_0x5d2913._0x45c9ff);else{if(_0x113c97)_0x1c9894=_0x2a9ada(_0x5d2913._0x57eac9);else{if(_0x3cdf71)_0x1c9894=_0x2a9ada(_0x5d2913._0x20fadb);else{if(_0x4aa18f)_0x1c9894='game';else{if(_0x34d2c1)_0x1c9894=_0x2a9ada(_0x5d2913._0x253183);}}}}}}switch(_0x1c9894){case _0x2a9ada(0x264):_0x591dbd=_0x2a9ada(_0x5d2913._0x2610ef),_0x1010e3=![];let _0x25023f=_0x2be2ce[_0x2a9ada(_0x5d2913._0x46196b)]('?')[0x0],_0x260c8a=new URLSearchParams(_0x2be2ce[_0x2a9ada(_0x5d2913._0x4870d1)]('?')[0x1]),_0x379527=new URLSearchParams();const _0x4233a4=['session','from',_0x2a9ada(0x2b3),_0x2a9ada(0x208),'shop_id',_0x2a9ada(0x1eb),'product_total_count','can_show_items','bgurl',_0x2a9ada(_0x5d2913._0x53d22f)];_0x4233a4[_0x2a9ada(0x268)](_0x56b1a2=>{const _0x2b41fa=_0x2a9ada;if(_0x260c8a[_0x2b41fa(_0x5c4557._0x4d0558)](_0x56b1a2))_0x379527[_0x2b41fa(_0x5c4557._0x126b7a)](_0x56b1a2,_0x260c8a[_0x2b41fa(_0x5c4557._0x404005)](_0x56b1a2));}),_0x4ccc6f=_0x2a9ada(_0x5d2913._0x327994)+encodeURIComponent(_0x25023f+'?'+_0x379527[_0x2a9ada(0x2e7)]())+_0x2a9ada(0x2ca)+_0x18e07f;break;case _0x2a9ada(0x20d):_0x591dbd=_0x2a9ada(_0x5d2913._0x5edd56),_0x1010e3=![];let _0x11c98b=_0x2be2ce[_0x2a9ada(0x2a4)](_0x2a9ada(_0x5d2913._0x1843af))?new URL(_0x2be2ce)['searchParams']['get'](_0x2a9ada(0x21a)):_0x2be2ce,_0x51c3c8=_0x11c98b[_0x2a9ada(_0x5d2913._0x4870d1)]('?')[0x0],_0xa4c607=_0x51c3c8+_0x2a9ada(0x27a)+_0x549401;_0x4ccc6f=_0x2a9ada(0x204)+encodeURIComponent(_0xa4c607)+_0x2a9ada(_0x5d2913._0x166420)+_0x18e07f;break;case _0x2a9ada(0x257):case _0x2a9ada(_0x5d2913._0xb66997):_0x591dbd=_0x507b94?_0x2a9ada(0x2c4):_0x2a9ada(_0x5d2913._0x4150b4),_0x1010e3=![];let _0x2dd0d1=_0x2be2ce['split']('?')[0x0],_0x2646b3=new URLSearchParams(_0x2be2ce[_0x2a9ada(_0x5d2913._0x543698)]('?')[0x1]),_0x32c9bb=new URLSearchParams();const _0x216e1c=[_0x2a9ada(_0x5d2913._0x4948e2),'evcode',_0x2a9ada(_0x5d2913._0x1b068f),_0x2a9ada(0x249),_0x2a9ada(0x26f)];_0x216e1c[_0x2a9ada(0x268)](_0x221be7=>{const _0x5bbe4f=_0x2a9ada;if(_0x5bbe4f(_0x274aad._0x18e7cd)!==_0x5bbe4f(_0x274aad._0xc0cabf)){if(_0x3022c2[_0x5bbe4f(0x262)](_0x2e6854))_0x5be3ef['append'](_0x5a1bff,_0x195866[_0x5bbe4f(0x276)](_0x1a2a1b));}else _0x2646b3[_0x5bbe4f(0x262)](_0x221be7)&&_0x32c9bb[_0x5bbe4f(0x2b6)](_0x221be7,_0x2646b3['get'](_0x221be7));});let _0x2898cf=_0x32c9bb[_0x2a9ada(_0x5d2913._0x47c1f5)]()?_0x2dd0d1+'?'+_0x32c9bb[_0x2a9ada(0x2e7)]():_0x2dd0d1;_0x4ccc6f=_0x2a9ada(0x204)+encodeURIComponent(_0x2898cf)+_0x2a9ada(0x2ca)+_0x18e07f;break;case'game':case _0x2a9ada(0x22c):case'other':if(_0x4aa18f)_0x591dbd='遊戲粉嫩丸子';else{if(_0x3cdf71)_0x591dbd=_0x2a9ada(0x2b4);else _0x591dbd=_0x2a9ada(0x291);}_0x1010e3=![];let _0x16cb4f=_0x2be2ce[_0x2a9ada(_0x5d2913._0x1c5306)]('?')[0x0]['replace'](/\/$/,'');!_0x16cb4f[_0x2a9ada(_0x5d2913._0x22ad8d)](_0x2a9ada(0x2a7))?_0x4ccc6f=_0x2be2ce:_0x4ccc6f=_0x2a9ada(_0x5d2913._0x327994)+encodeURIComponent(_0x16cb4f)+_0x2a9ada(0x2ca)+_0x18e07f;break;case _0x2a9ada(0x263):_0x591dbd='商品粉嫩丸子',_0x1010e3=!![];var _0x45d4b0=_0x34d2c1[0x1]||_0x34d2c1[0x3]||_0x34d2c1[0x5]||'',_0x21515e=_0x34d2c1[0x2]||_0x34d2c1[0x4]||_0x34d2c1[0x6]||'',_0x5361e0=_0x2a9ada(_0x5d2913._0x2f7100)+_0x45d4b0+'/'+_0x21515e;_0x4ccc6f=_0x2a9ada(0x204)+encodeURIComponent(_0x5361e0)+'&affiliate_id='+_0x18e07f;break;}let _0x4e47e6='';if(_0x2a3207){if(_0x2a9ada(_0x5d2913._0x3e6174)!==_0x2a9ada(0x270)){const _0x9a8b3e=await axios['get'](GAS_URL+_0x2a9ada(0x237)+encodeURIComponent(_0x4ccc6f)+_0x2a9ada(0x20f),{'timeout':0x2134});_0x4e47e6=_0x9a8b3e[_0x2a9ada(0x2c1)][_0x2a9ada(0x218)]||_0x4ccc6f;}else _0x59071f+=_0x2a9ada(_0x5d2913._0x10b09b)+_0x429a7d[_0x2a9ada(_0x5d2913._0x4f93e0)]+_0x2a9ada(_0x5d2913._0x2a4231)+_0x4054f9['displayUrl']+_0x2a9ada(_0x5d2913._0x8e766a)+_0x5c33f7[_0x2a9ada(0x299)]+_0x2a9ada(_0x5d2913._0x319d90)+_0x57cda5[_0x2a9ada(0x28c)]+_0x2a9ada(0x227)+(_0x28de14[_0x2a9ada(_0x5d2913._0x12988b)]?'去購買':_0x2a9ada(_0x5d2913._0x2c48b1))+'</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>';}return{'displayUrl':_0x4e47e6,'transformedUrl':_0x4ccc6f,'typeText':_0x591dbd,'isProduct':_0x1010e3,'useShorten':_0x2a3207,'tid':_0x4358e8};}catch(_0x382840){if(_0x2a9ada(_0x5d2913._0x144416)===_0x2a9ada(_0x5d2913._0x1ab841))_0x9d54e4+=_0x2a9ada(0x2ed);else{_0x382840[_0x2a9ada(0x280)]=_0x4358e8;throw _0x382840;}}}async function retryOneBall(_0x43718d,_0x203161,_0x3ed4fe){const _0xff10f6={_0x44f138:0x29b,_0xdcb7d3:0x288,_0x583fab:0x213,_0x2d731a:0x27f,_0x219cd1:0x233,_0x3e440e:0x2d2,_0x47c1cf:0x2c5,_0x5b087c:0x299,_0x63fb54:0x2bc,_0x55b6fb:0x24a,_0x59fc50:0x232,_0x4061ea:0x24a,_0x97cdae:0x200,_0x400fc4:0x250,_0x524f74:0x28c,_0x2127f8:0x2e2,_0x1857e7:0x1f8,_0x35096e:0x2a5,_0x1b11f3:0x280,_0x559197:0x21f,_0x52fa7d:0x28a,_0x44aaf5:0x24b,_0x336003:0x225,_0x2794a9:0x260,_0x1847ab:0x1e9,_0x4873f2:0x2a4},_0x463d59=_0x384635,_0x37258a=_0x3ed4fe[_0x463d59(_0xff10f6._0x44f138)](_0x463d59(0x294)),_0x55d9e0=_0x37258a[_0x463d59(0x213)];_0x3ed4fe[_0x463d59(_0xff10f6._0xdcb7d3)]=!![],_0x3ed4fe[_0x463d59(_0xff10f6._0x583fab)]=_0x463d59(0x2a9);try{const _0x1ab84a=await processOneUrl(_0x43718d);_0x37258a['className']=_0x463d59(0x2e5);let _0xaf445e=_0x463d59(0x1fe)+(_0x203161+0x1)+'</span>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<span\x20class=\x22card-type-tag\x22>'+_0x1ab84a[_0x463d59(0x2e2)]+_0x463d59(_0xff10f6._0x2d731a);if(_0x1ab84a[_0x463d59(0x299)][_0x463d59(_0xff10f6._0x219cd1)]('https')){if(_0x463d59(_0xff10f6._0x3e440e)!==_0x463d59(0x20c))_0xaf445e+=_0x463d59(_0xff10f6._0x47c1cf)+_0x1ab84a[_0x463d59(_0xff10f6._0x5b087c)]+_0x463d59(0x2de)+_0x1ab84a['displayUrl']+_0x463d59(0x23c)+_0x1ab84a[_0x463d59(0x299)]+'\x27,\x20this)\x22>📋\x20複製</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<button\x20class=\x22btn-go-action\x22\x20onclick=\x22window.open(\x27'+_0x1ab84a[_0x463d59(0x28c)]+_0x463d59(0x227)+(_0x1ab84a['isProduct']?_0x463d59(_0xff10f6._0x63fb54):_0x463d59(_0xff10f6._0x55b6fb))+_0x463d59(0x224);else return!![];}else _0xaf445e+=_0x463d59(_0xff10f6._0x59fc50)+_0x1ab84a['transformedUrl']+'\x27,\x20\x27_blank\x27)\x22>🚀\x20'+(_0x1ab84a[_0x463d59(0x1f0)]?_0x463d59(0x2bc):_0x463d59(_0xff10f6._0x4061ea))+_0x463d59(0x224);_0xaf445e+=_0x463d59(0x25a)+_0x203161+'\x22>[\x20+\x20查看原長網址\x20]</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22collapse\x20mt-2\x22\x20id=\x22longUrlCollapseRetry'+_0x203161+_0x463d59(_0xff10f6._0x97cdae)+_0x1ab84a['transformedUrl']+_0x463d59(_0xff10f6._0x400fc4)+_0x1ab84a['transformedUrl']+_0x463d59(0x2d5)+_0x1ab84a[_0x463d59(_0xff10f6._0x524f74)]+'\x27,\x20this)\x22>📋複製原長網址</button>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>',_0x37258a[_0x463d59(0x213)]=_0xaf445e;const _0x19d156=_0x1ab84a[_0x463d59(0x299)]['startsWith'](_0x463d59(0x24d))?_0x1ab84a[_0x463d59(0x299)]:_0x1ab84a[_0x463d59(0x28c)];urlMapping[_0x203161]={'original':_0x43718d,'replaceTo':_0x19d156},successLinks[_0x203161]=_0x1ab84a[_0x463d59(_0xff10f6._0x2127f8)]+'：'+_0x19d156;if(successLinks[_0x463d59(0x1fd)](_0x90a5be=>_0x90a5be!==null))copyAllBtn[_0x463d59(_0xff10f6._0x1857e7)][_0x463d59(0x221)]='block';}catch(_0x26c484){if(_0x463d59(0x2a5)!==_0x463d59(_0xff10f6._0x35096e))_0x326a79('0');else{_0x3ed4fe['disabled']=![],_0x3ed4fe[_0x463d59(_0xff10f6._0x583fab)]=_0x463d59(0x2dd);const _0xfc8a3=_0x26c484[_0x463d59(_0xff10f6._0x1b11f3)]||_0x463d59(_0xff10f6._0x559197);let _0x21031d=_0x463d59(0x259)+_0x26c484[_0x463d59(_0xff10f6._0x52fa7d)]+_0x463d59(0x203)+_0xfc8a3;if(_0x26c484['message']==='Network\x20Error')'LfuVY'===_0x463d59(_0xff10f6._0x44aaf5)?_0x1ff850(0x0):_0x21031d+=_0x463d59(0x2ed);else{if(_0x26c484[_0x463d59(_0xff10f6._0x336003)]==='ECONNABORTED'||_0x26c484[_0x463d59(0x28a)][_0x463d59(0x2a4)](_0x463d59(_0xff10f6._0x2794a9)))_0x21031d+=_0x463d59(_0xff10f6._0x1847ab);else _0x26c484['message'][_0x463d59(_0xff10f6._0x4873f2)]('網址追蹤失敗')&&(_0x21031d+=_0x463d59(0x2ab));}const _0x342af0=_0x37258a[_0x463d59(0x244)](_0x463d59(0x290));if(_0x342af0)_0x342af0[_0x463d59(0x274)]=''+_0x21031d;}}}function _0xb16720(_0xda3350){const _0x54d996={_0x58b85b:0x204,_0x5240e4:0x2c9,_0x554321:0x214},_0x4e756f={_0x4097c1:0x2dd,_0x211b03:0x203,_0x477d80:0x225,_0xb74b0a:0x2a4,_0x2218dc:0x2f0,_0x41a71f:0x202,_0x45c869:0x29e,_0x444f84:0x2ec,_0x1deefc:0x273,_0x3a56d3:0x220,_0x3a7e74:0x228,_0x10c6ac:0x25c,_0x5c0973:0x23d},_0x1effa9=_0x384635;function _0x5c0a65(_0x37e958){const _0x12c6d1={_0xa8d7ee:0x2aa,_0x35285e:0x22d,_0x4f9c9f:0x22d},_0x5ad269=_0x1b6b;if(typeof _0x37e958===_0x5ad269(0x2d4)){if('wTXlV'!=='wTXlV'){_0x324bf2[_0x5ad269(0x288)]=![],_0x2b1fa0['innerHTML']=_0x5ad269(_0x4e756f._0x4097c1);const _0x523f71=_0x4108b8['tid']||'N/A';let _0x168f7b=_0x5ad269(0x259)+_0x2f92f1[_0x5ad269(0x28a)]+_0x5ad269(_0x4e756f._0x211b03)+_0x523f71;if(_0x70c720['message']==='Network\x20Error')_0x168f7b+=_0x5ad269(0x2ed);else{if(_0x3b7e72[_0x5ad269(_0x4e756f._0x477d80)]==='ECONNABORTED'||_0x30a2ef[_0x5ad269(0x28a)]['includes'](_0x5ad269(0x260)))_0x168f7b+='\x0a🍡丸子烤焦了，請再試一次！(連線超時)';else _0x1ca331[_0x5ad269(0x28a)][_0x5ad269(_0x4e756f._0xb74b0a)](_0x5ad269(_0x4e756f._0x2218dc))&&(_0x168f7b+=_0x5ad269(0x2ab));}const _0xfd7fe1=_0xb2a828[_0x5ad269(0x244)](_0x5ad269(0x290));if(_0xfd7fe1)_0xfd7fe1[_0x5ad269(0x274)]=''+_0x168f7b;}else return function(_0x2db50b){}[_0x5ad269(_0x4e756f._0x41a71f)](_0x5ad269(_0x4e756f._0x45c869))[_0x5ad269(_0x4e756f._0x444f84)](_0x5ad269(_0x4e756f._0x1deefc));}else(''+_0x37e958/_0x37e958)[_0x5ad269(0x2e3)]!==0x1||_0x37e958%0x14===0x0?'FBMUj'==='FBMUj'?function(){return!![];}[_0x5ad269(0x202)]('debu'+_0x5ad269(0x23e))['call'](_0x5ad269(_0x4e756f._0x3a56d3)):_0x581cd4(this,function(){const _0x500740=_0x5ad269,_0x2434f9=new _0x5d8f1f(_0x500740(0x2af)),_0x54f1f9=new _0x14fdb9(_0x500740(_0x12c6d1._0xa8d7ee),'i'),_0x5a69c9=_0x1f51f2('init');!_0x2434f9[_0x500740(_0x12c6d1._0x35285e)](_0x5a69c9+_0x500740(0x2d1))||!_0x54f1f9[_0x500740(_0x12c6d1._0x4f9c9f)](_0x5a69c9+'input')?_0x5a69c9('0'):_0x28484b();})():_0x5ad269(_0x4e756f._0x3a7e74)!=='UXMnL'?_0x5a1dfb('🍡\x20我的丸子拼盤：\x0a'+_0x5730f7[_0x5ad269(_0x4e756f._0x10c6ac)]('\x0a'),_0xc50de1):function(){return![];}[_0x5ad269(0x202)]('debu'+'gger')[_0x5ad269(0x2ec)](_0x5ad269(_0x4e756f._0x5c0973));_0x5c0a65(++_0x37e958);}try{if(_0x1effa9(0x242)===_0x1effa9(0x2d8))_0x5ec7b0=_0x1effa9(_0x54d996._0x58b85b)+_0x856ea0(_0x5161b3)+_0x1effa9(0x2ca)+_0x487f90;else{if(_0xda3350)return _0x5c0a65;else _0x1effa9(0x2d9)===_0x1effa9(0x254)?_0x1f0485[_0x1effa9(0x1f8)][_0x1effa9(0x221)]=_0x3a5739[_0x1effa9(_0x54d996._0x5240e4)]?_0x1effa9(0x26e):_0x1effa9(_0x54d996._0x554321):_0x5c0a65(0x0);}}catch(_0x29ca2a){}}
+    </script>
+</body>
+
+</html>
