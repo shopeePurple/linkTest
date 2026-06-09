@@ -1,0 +1,977 @@
+<!-- makeUrl.html #v2.14 26/05/02 09:15 -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="favicon64.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="favicon180.png">
+    <title>大紫粉嫩丸子工廠</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --purple-main: #6f42c1;
+            --purple-dark: #59359a;
+            --purple-light: #ebe4ff;
+            --purple-superlight: #f3f0ff;
+            --pink-accent: #f0768b;
+            --pink-sweet: #f28ea1;
+            --pink-blossom: #f7d5df;
+            --pink-light: #fff5f6;
+        }
+
+        /* 確保行動裝置滿版且不縮小 */
+        html,
+        body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background: #f8f9fa;
+        }
+
+        body {
+            padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            /* 修正 iOS Safari 高度問題 */
+            min-height: 100vh;
+        }
+
+        .card {
+            max-width: 400px;
+            margin: auto;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(111, 66, 193, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header-custom {
+            background: white;
+            padding: 25px 15px 10px;
+            text-align: center;
+        }
+
+        /* 輸入框容器與清除按鈕 */
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #eee;
+            font-size: 16px;
+            transition: all 0.3s;
+            padding-right: 35px;
+        }
+
+        .form-control:focus {
+            border-color: var(--purple-main);
+            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.1);
+        }
+
+        /* 批次輸入框高度 */
+        #urlInput {
+            height: 120px;
+            resize: none;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: #ccc;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 12px;
+            line-height: 20px;
+            cursor: pointer;
+            /*預設隱藏*/
+            display: none;
+            padding: 0;
+            text-align: center;
+        }
+
+        /* 選項樣式：靠右對齊 */
+        .options-group {
+            margin-bottom: 15px;
+            padding-right: 5px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .custom-control-label {
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #495057;
+            user-select: none;
+        }
+
+        /* 基本狀態：當開關被選取 (Checked) 時的背景與框線 */
+        .custom-control-input:checked~.custom-control-label::before {
+            border-color: var(--pink-sweet) !important;
+            background-color: var(--pink-sweet) !important;
+        }
+
+        /* 聚焦狀態 (Focus)：移除藍色光圈，改為粉色半透明陰影 */
+        .custom-control-input:focus~.custom-control-label::before {
+            box-shadow: 0 0 0 0.2rem rgba(242, 142, 161, 0.25) !important;
+            /* --pink-sweet 的半透明色 */
+            border-color: var(--pink-sweet) !important;
+        }
+
+        /* 針對非選取狀態下的聚焦外框也進行微調 */
+        .custom-control-input:focus:not(:checked)~.custom-control-label::before {
+            border-color: var(--pink-blossom) !important;
+            box-shadow: 0 0 0 0.2rem rgba(247, 213, 223, 0.5) !important;
+        }
+
+        /* 按住狀態 (Active)：強制移除 Bootstrap 預設的藍色背景與亮點濾鏡 */
+        .custom-control-input:active~.custom-control-label::before {
+            background-color: var(--pink-blossom) !important;
+            /* 按住瞬間先顯示淡粉 */
+            border-color: var(--pink-blossom) !important;
+            filter: none !important;
+        }
+
+        /* 4. 已選取狀態下按住 (Checked + Active)：維持粉色 */
+        .custom-control-input:checked:active~.custom-control-label::before {
+            background-color: var(--pink-sweet) !important;
+            border-color: var(--pink-sweet) !important;
+        }
+
+        /* 做丸子按鈕 (大紫主色) */
+        .btn-primary {
+            background-color: var(--purple-main) !important;
+            border-color: var(--purple-main) !important;
+            height: 50px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        button.btn-primary:disabled {
+            background-color: var(--purple-main) !important;
+            border-color: var(--purple-main) !important;
+            color: white !important;
+            opacity: 1 !important;      /* 強制不透明，不顯示 Bootstrap 的淡色 */
+            cursor: wait;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:active {
+            background-color: var(--purple-dark) !important;
+        }
+
+        .btn-primary:active {
+            transform: translateY(2px);
+        }
+
+        /* 轉圈圈動畫圖示 */
+        @keyframes spin-it {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner-border-custom {
+            display: inline-block;
+            animation: spin-it 1s linear infinite;
+            flex-shrink: 0;     /* 防止丸子在空間不足時被擠扁 */
+            font-style: normal; /* 確保表情符號不被斜體影響 */
+        }
+
+        /* 結果清單容器 */
+        #resultList {
+            max-height: none;       /* 移除高度限制 */
+            overflow-y: visible;    /* 移除內部滾動 */
+            padding: 5px 0;
+        }
+
+        /* 彈跳動畫定義 */
+        @keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.08);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate-bounce {
+            animation: bounceIn 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+        }
+
+        /* 重新定義標籤位置與樣式 */
+        .ball-card {
+            position: relative;         /* 讓內部標籤可以絕對定位 */
+            background: white;
+            border: 3px solid var(--purple-light);
+            border-radius: 15px;
+            padding: 20px 15px 15px;    /* 增加上方高度給標籤與號碼 */
+            margin-top: 15px;           /* 增加上方間距，給編號留位置 */
+        }
+
+        .ball-card.success {
+            border-color: var(--purple-light);
+        }
+
+        .ball-card.fail {
+            border-color: #ffeeba;
+        }
+
+        /* 當父層是 fail 時，編號標籤的底色同步變色 */
+        .ball-card.fail .card-id-label {
+            background-color: #ffeeba;
+        }
+
+        /* 進度條樣式 */
+        .progress {
+            height: 12px;
+            border-radius: 20px;
+            background-color: var(--pink-light);
+            margin-bottom: 0;
+        }
+
+        /* 進度條文字容器 */
+        .progress-wrapper {
+            display: none;          /* 初始隱藏 */
+            margin-bottom: 10px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 6px;
+        }
+
+        .status-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;               /* 丸子與文字間的間距 */
+            white-space: nowrap;    /* 強制不換行，防止丸子掉下去 */
+            width: 100%;
+            color: var(--purple-main);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .progress-bar {
+            background-color: var(--pink-sweet);
+        }
+
+        /* 紅框提示區預設隱藏 */
+        #stepReminder {
+            display: none;
+        }
+
+        /* 紅框提示區 */
+        .step-highlight {
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            color: white;
+            background-color: var(--pink-accent);
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(240, 118, 139, 0.2);
+        }
+
+        .step-container {
+            text-align: center;
+            margin-top: 7px;
+            margin-bottom: 10px;
+        }
+
+        /* 左上角：號碼 */
+        .card-id-label {
+            position: absolute;
+            top: -11px;     /* 往上推，剛好壓在線上 */
+            left: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #495057;     /* 深色小字 */
+            background-color: var(--purple-light);
+            padding: 0px 8px;
+            border-radius: 8px;
+            z-index: 10;        /* 確保在最上層 */
+            box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 右上角：標籤 */
+        .card-type-tag {
+            position: absolute;
+            top: 8px;
+            right: 15px;
+            background: #adb5bd;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* 縮網址顯示區塊：膠囊樣式 */
+        .finalUrlLink {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: fit-content;
+            margin: 5px auto;
+            padding: 6px 10px;
+            background: var(--pink-light);
+            border-radius: 50px;
+            border: 2px dashed var(--purple-main);
+            color: var(--purple-main);
+            font-weight: 725;
+            font-size: 1.1rem;
+            text-decoration: none;
+            word-break: break-all;
+            transition: all 0.2s;
+        }
+
+        .finalUrlLink:active {
+            transform: scale(0.97);
+            background: var(--purple-light);
+        }
+
+        .finalUrlLink a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .copy-all-btn {
+            width: 100%;
+            height: 45px;
+            border-radius: 10px;
+            background: white;
+            border: 2px solid var(--purple-main);
+            color: var(--purple-main);
+            font-weight: bold;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .copy-all-btn:hover,
+        .copy-all-btn:active {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .copy-all-btn:active {
+            transform: translateY(2px);
+        }
+
+        /* 功能按鈕群組：確保 50/50 分配 */
+        .action-btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+            width: 100%;
+        }
+
+        /* 複製短網址：採用常用商品卡片樣式 */
+        .btn-copy-short {
+            flex: 0.9;
+            background-color: white;
+            border: 1.5px solid #e9ecef;
+            border-radius: 12px;
+            height: 35px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            color: #495057;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-copy-short:hover,
+        .btn-copy-short:active {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .btn-copy-short:active {
+            transform: translateY(2px);
+        }
+
+        /* 去購買按鈕：紫色風格 */
+        .btn-go-action {
+            flex: 1.1;
+            background-color: var(--purple-main);
+            color: white !important;
+            border: none;
+            border-radius: 12px;
+            height: 35px;
+            padding: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-go-action:hover,
+        .btn-go-action:active {
+            background-color: var(--purple-dark) !important;
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .btn-go-action:active {
+            transform: translateY(2px);
+        }
+
+        .text-break {
+            word-break: break-all;
+        }
+
+        /* 複製原網址按鈕 */
+        .btn-copy-long {
+            width: 100%;
+            background-color: white;
+            color: #495057;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            height: 35px;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-copy-long:hover,
+        .btn-copy-long:active {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+            box-shadow: 0 3px 6px rgba(111, 66, 193, 0.1);
+        }
+
+        .btn-copy-long:active {
+            transform: translateY(2px);
+        }
+
+        /* 常用商品樣式 */
+        .quick-link-btn {
+            margin-bottom: 10px;
+            border-radius: 12px;
+            text-align: left;
+            padding: 12px 15px;
+            background-color: white;
+            border: 1.5px solid #e9ecef;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            text-decoration: none !important;
+            color: #495057 !important;
+        }
+
+        .quick-link-btn:active,
+        .quick-link-btn:hover {
+            background-color: var(--purple-superlight);
+            border-color: var(--purple-main);
+        }
+
+        .quick-link-btn:active {
+            transform: translateY(2px);
+        }
+
+        .quick-link-text {
+            margin-left: 10px;
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        .quick-link-url {
+            font-size: 0.7rem;
+            color: #adb5bd;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div class="card-header-custom">
+            <h5 class="text-center" style="color: #6f42c1; font-weight: bold;">
+                🍡大紫<span style="color: #f0768b;">粉嫩丸子</span><span style="font-size: 0.8em;">工廠</span>
+            </h5>
+            <small class="text-muted">讓您的蝦皮連結又Q又大紫🔗</small>
+        </div>
+        <div class="card-body pt-0">
+            <div class="form-group input-wrapper">
+                <textarea id="urlInput" class="form-control" placeholder="請投入蝦皮網址原料(最多5串)"></textarea>
+                <button id="clearBtn" class="clear-btn">&times;</button>
+            </div>
+
+            <div class="options-group">
+                <div class="custom-control custom-switch mr-3">
+                    <input type="checkbox" class="custom-control-input" id="smartReplace" checked>
+                    <label class="custom-control-label text-secondary" for="smartReplace"
+                        style="cursor:pointer">🫛原文換餡</label>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="useShorten" checked>
+                    <label class="custom-control-label text-secondary" for="useShorten"
+                        style="cursor:pointer">🍾縮址淋醬</label>
+                </div>
+            </div>
+
+            <button id="convertBtn" class="btn btn-primary shadow mb-2">開始做丸子</button>
+
+            <button id="copyAllBtn" class="copy-all-btn">🍱 打包全部丸子清單</button>
+
+            <div id="stepReminder" class="step-container animate-bounce">
+                <div class="step-highlight">
+                    ➊刪購物車 ➋關蝦皮APP ➌點下面加購
+                </div>
+            </div>
+
+            <div id="resultList"></div>
+
+            <div id="progressWrapper" class="progress-wrapper">
+                <div class="progress-info">
+                    <span id="statusText" class="status-text">
+                        <span class="spinner-border-custom" style="display: none;">🍡</span>
+                        <span id="actualStatus">🏋️師傅在做暖身操...</span>
+                        <span class="spinner-border-custom">🍡</span>
+                    </span>
+                </div>
+                <div id="progressContainer" class="progress shadow-sm">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+                        role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <h6 class="font-weight-bold mb-3 text-secondary" style="display: flex; align-items: center;">
+                <span
+                    style="background: #6f42c1; width: 4px; height: 42px; display: inline-block; margin-right: 8px; border-radius: 2px;"></span>
+                📍 常用商品 (➊刪購物車 ➋關蝦皮APP ➌點下面加購)
+            </h6>
+
+            <div class="d-flex flex-column">
+                <a href="https://reurl.cc/gnK8kQ?openExternalBrowser=1" target="_blank"
+                    class="quick-link-btn shadow-sm">
+                    <span style="font-size: 1.2rem;">🧻</span>
+                    <div class="quick-link-text"><span>揪探吉</span><span
+                            class="quick-link-url">https://reurl.cc/gnK8kQ</span>
+                    </div>
+                </a>
+                <a href="https://reurl.cc/1ky4rD?openExternalBrowser=1" target="_blank"
+                    class="quick-link-btn shadow-sm">
+                    <span style="font-size: 1.2rem;">🧻</span>
+                    <div class="quick-link-text"><span>好惠買</span><span
+                            class="quick-link-url">https://reurl.cc/1ky4rD</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="text-center mb-1">
+            <small class="text-muted d-block" style="font-size: 12px;">㊙ 丸子會帶有大紫蝦皮分潤 ㊙</small>
+            <p class="text-center" style="font-size: 10px; color: #ccc;">FACTORY V2.14</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        // --- 全域設定與變數 ---
+        const MAX_INPUT_LINKS = 5;
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwaTlTHRzU5kTge0LzbGyo7l8UMcngAwNYZtLfhITwqLXWXYKJa70BtV869MEZIE4u5yA/exec";
+        const GAS_API_TIMEOUT = 9000;
+        const CF_WORKER_URL = "https://maruko-factory.iamwahahao.workers.dev/";
+        const CF_API_TIMEOUT = 20000;
+        const loadingTexts = ["🤾‍♀️揉麵糰...", "🪡串竹籤...", "🔥蒸煮烤...", "🍾淋醬汁...", "🧂撒粉中..."];
+        const FAIL_OOPS_TEXTS = ["哎呀手滑了", "這顆捏壞啦", "麵糰不聽話", "機器鬧脾氣", "師傅打噴嚏"];
+        const RETRY_OOPS_TEXTS = ["再..再一次?", "重捏看看", "再給次機會", "重捏！", "剛才熱身,現在才正式"];
+
+        let originalFullText = ""; // 儲存文案，打包時才抓得到
+        let urlMapping = [];
+        let successLinks = []; // 儲存成功的連結供「複製全部」使用
+        let currentLoadingInterval = null;
+        let isFirstClick = true; // 提示直播加購用
+
+        // UI 元件
+        const urlInput = document.getElementById('urlInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const convertBtn = document.getElementById('convertBtn');
+        const resultList = document.getElementById('resultList');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const copyAllBtn = document.getElementById('copyAllBtn');
+        const progressWrapper = document.getElementById('progressWrapper');
+        const statusText = document.getElementById('statusText');
+        const actualStatus = document.getElementById('actualStatus');
+
+        // --- UI 開啟/關閉 --- 
+        function startMaking(isMaking) {
+            convertBtn.disabled = isMaking;
+            convertBtn.innerText = isMaking ? "⏳ 製作中..." : "開始做丸子";
+            urlInput.disabled = isMaking;
+            document.getElementById('useShorten').disabled = isMaking;
+            document.getElementById('smartReplace').disabled = isMaking;
+            if (isMaking) {
+                resultList.innerHTML = "";
+                document.getElementById('stepReminder').style.display = "none"; // 重設提示區
+                copyAllBtn.style.display = "none";
+                progressWrapper.style.display = "block"; // 顯示進度組
+                progressContainer.style.display = "flex";
+                progressBar.style.width = "0%";
+                progressBar.classList.add('progress-bar-striped', 'progress-bar-animated');
+                statusText.querySelectorAll('.spinner-border-custom').forEach(el => el.style.display = 'block');
+                actualStatus.innerText = "🏋️師傅在做暖身操...";
+            } else {
+                if (successLinks.some(l => l !== null)) copyAllBtn.style.display = "block";
+                progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated'); // 移除動畫與條紋
+                // 完工 3 秒後進度條自動消失
+                setTimeout(() => { progressContainer.style.display = 'none'; }, 3000);
+                statusText.querySelectorAll('.spinner-border-custom').forEach(el => el.style.display = 'none');
+                actualStatus.innerText = "🎉 丸子全數出爐！";
+            }
+        }
+
+        urlInput.addEventListener('input', () => {
+            clearBtn.style.display = urlInput.value ? 'block' : 'none';
+        });
+
+        clearBtn.addEventListener('click', () => {
+            urlInput.value = '';
+            clearBtn.style.display = 'none';
+            urlInput.focus();
+        });
+
+        // --- 複製功能 ---
+        async function copyToClipboard(text, element) {
+            try {
+                // 使用現代 API
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    // 備用方案 (針對部分 WebView)
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                const originalText = element.innerText;
+                element.innerText = "✅已複製";
+                //setTimeout(() => element.innerText = originalText, 1500);
+            } catch (err) { alert("複製失敗"); }
+        }
+
+        // 生成丸子卡片函式
+        function renderBallCard(result, index) {
+            //const finalUrl = result.displayUrl.startsWith('https') ? result.displayUrl : result.transformedUrl;
+            const isShort = result.displayUrl.startsWith('https');            
+            // 卡片框架
+            let html = `
+                <span class="card-id-label">丸子 #${index + 1}</span>
+                <span class="card-type-tag">${result.typeText}</span>
+                <div style="height: 10px;"></div>
+            `;
+            if (isShort) {
+                // 🍬 縮網址模式：顯示大膠囊 + 複製短址 + 去購買
+                html += `
+                    <div class="finalUrlLink">
+                        <a href="${result.displayUrl}?openExternalBrowser=1">${result.displayUrl}</a>
+                    </div>
+                    <div class="action-btn-group">
+                        <button class="btn-copy-short" onclick="copyToClipboard('${result.displayUrl}', this)">📋 複製</button>
+                        <button class="btn-go-action" onclick="window.open('${result.transformedUrl}', '_blank')">🚀 ${result.isProduct ? '去購買' : '到此頁'}</button>
+                    </div>`;
+            } else {
+                // 🌾 原味模式：不顯示膠囊，直接顯示功能按鈕
+                html += `
+                    <div class="action-btn-group">                                
+                        <button class="btn-go-action" onclick="window.open('${result.transformedUrl}', '_blank')">🚀 ${result.isProduct ? '去購買' : '到此頁'}</button>
+                    </div>`;
+            }
+            // 長網址部分
+            html += `
+                <button class="btn btn-sm btn-link p-0 text-secondary" type="button" data-toggle="collapse" data-target="#longUrlCollapse${index}">[ + 查看原長網址 ]</button>
+                <div class="collapse mt-2" id="longUrlCollapse${index}"> 
+                    <div class="p-2 border rounded bg-light">
+                        <a href="${result.transformedUrl}" target="_blank" class="text-break small text-secondary">${result.transformedUrl}</a>
+                        <button class="btn-copy-long" onclick="copyToClipboard('${result.transformedUrl}', this)">📋複製原長網址</button>
+                    </div>
+                </div>`;            
+            return html;
+        }
+
+        convertBtn.addEventListener('click', async () => {
+            // 0. 提示直播加購邏輯
+            if (isFirstClick) {
+                isFirstClick = false; // 解鎖，下次點擊就會真正執行
+                convertBtn.innerText = "直播加購好了嗎？好了請繼續";
+                //convertBtn.classList.add('btn-warning'); // 可選：讓按鈕變色（如 Bootstrap 的黃色）提醒使用者
+                return; // 結束本次點擊，等待第二次點擊
+            }
+            
+            // 1. 做好輸入檢查、取得網址並去重、限制數量
+            // 1-1 以正規表達式抓取所有標準網址起點，並去重複、計數
+            // 這個 Regex 會抓取以 https:// 開頭，直到空格、換行或字串結尾的部分
+            const urlRegex = /https:\/\/[^\s\n\r]+/g;
+            let foundUrls = urlInput.value.match(urlRegex) || [];
+            // 去除網址結尾可能誤抓的標點符號或括號，並過濾掉重複項
+            let cleanUrls = foundUrls.map(url => url.trim().replace(/[，。！；？、,;!?\.\)\]\}]+$/, "")).filter(url => url !== "");
+            let urls = Array.from(new Set(cleanUrls));
+
+            if (urls.length === 0) return alert("⚠️請輸入蝦皮網址");
+            if (foundUrls.length > MAX_INPUT_LINKS) {
+                return alert("偵測到" + foundUrls.length + "個網址原料，最多一次" + MAX_INPUT_LINKS + "個");
+            }
+            urls.slice(0, MAX_INPUT_LINKS); //強制刪掉多的做為保險
+
+            // 1-2 檢查是否為蝦皮網址
+            const allowedPrefixes = [
+                'https://tw.shp.ee',
+                'https://shopee.tw',
+                'https://s.shopee.tw',
+                'https://shp.ee',
+                'https://live.shopee.tw',
+                'https://sv.shopee.tw',
+                'https://idgame.shopee.tw', // 個人任務類遊戲
+                'https://games.shopee.tw'   // 賣家行銷類遊戲
+            ];
+            for (let i = 0; i < urls.length; i++) {
+                if (!allowedPrefixes.some(prefix => urls[i].startsWith(prefix))) {
+                    return alert("⚠️第" + (i + 1) + "個網址格式錯誤，請輸入蝦皮網址\n" + urls[i]);
+                }
+            }
+
+            // 2. 初始化
+            originalFullText = urlInput.value;
+            //      用來存 { original: '...', new: '...' }
+            urlMapping = new Array(urls.length).fill(null);
+            successLinks = new Array(urls.length).fill(null);
+            const isSmartReplace = document.getElementById('smartReplace').checked;
+            if (currentLoadingInterval) clearInterval(currentLoadingInterval);
+            // 初始化UI
+            startMaking(true);
+            copyAllBtn.innerText = isSmartReplace ? "📝 打包換餡後的原文" : "🍱 打包全部丸子清單";
+
+            // 3. 逐筆處理
+            for (let i = 0; i < urls.length; i++) {
+                let currentUrl = urls[i];
+                // 先顯示進度
+                let textIdx = 0;
+                // 設定新的計時器並存入全域變數
+                currentLoadingInterval = setInterval(() => {
+                    actualStatus.innerText = ` 丸子 #${i + 1} / ${urls.length}:  ${loadingTexts[textIdx % loadingTexts.length]}`;
+                    textIdx++;
+                }, 1000);
+
+                try {
+                    const result = await processOneUrl(currentUrl);
+                    // 在每一筆處理後休息 1 秒，在這停等比較不會有丸子都跳出來了，下一個開始等很久的感覺
+                    if (i < urls.length - 1) await new Promise(resolve => setTimeout(resolve, 1000));
+                    clearInterval(currentLoadingInterval); // 停止文字跳動
+
+                    // 如果是商品丸子，顯示紅框提示
+                    if (result.isProduct) {
+                        document.getElementById('stepReminder').style.display = "block";
+                    }
+
+                    // 成功 UI
+                    // 組裝 HTML
+                    const cardInner = renderBallCard(result, i);
+                    const htmlContent = `<div class="ball-card success shadow-sm animate-bounce">${cardInner}</div>`;
+                    // 成功後才加入並彈出卡片
+                    resultList.insertAdjacentHTML('beforeend', htmlContent);
+                    // 存入結果網址供置換用
+                    const finalNewUrl = result.displayUrl.startsWith('https') ? result.displayUrl : result.transformedUrl;
+                    urlMapping[i] = { original: currentUrl, replaceTo: finalNewUrl };
+                    successLinks[i] = `${result.typeText}：${finalNewUrl}`;
+
+                } catch (error) {
+                    clearInterval(currentLoadingInterval);
+                    const tid = error.tid || "N/A";
+                    let errorMsg = "工廠機器故障：" + error.message + "tid:" + tid;
+                    // 檢查是否為超時錯誤
+                    if (error.message === "Network Error") {
+                        errorMsg += "\n🍡機器停電，請檢查網路插頭有插好嗎";
+                    } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+                        errorMsg += "\n🍡丸子烤焦了，請再試一次！(連線超時)";
+                    } else if (error.message.includes("網址追蹤失敗")) {
+                        errorMsg += "\n🍡麵糰沒揉好，請檢查網址是否正確！";
+                    }
+
+                    // 失敗 UI
+                    const randomOops = FAIL_OOPS_TEXTS[Math.floor(Math.random() * FAIL_OOPS_TEXTS.length)];
+                    const randomRetry = RETRY_OOPS_TEXTS[Math.floor(Math.random() * RETRY_OOPS_TEXTS.length)];
+                    let failContent =
+                        `<div id="card-fail-${i}" class="ball-card fail shadow-sm animate-bounce">
+                            <span class="card-id-label">丸子 #${i + 1}</span>
+                            <span class="card-type-tag" style="background:#ccc">NG丸子</span>
+                            <strong>😵${randomOops}😵</strong><br>
+                            <small class="text-danger">${errorMsg}</small>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-secondary w-100" 
+                                        onclick="retryOneBall('${currentUrl}', ${i}, this)">
+                                    🔄 ${randomRetry}
+                                </button>
+                            </div>
+                        </div>`;
+                    resultList.insertAdjacentHTML('beforeend', failContent);
+                }
+
+                // 更新進度條百分比
+                progressBar.style.width = ((i + 1) / urls.length * 100) + "%";
+                // 捲動到底部
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }
+
+            // 4. 結束處理         
+            startMaking(false);
+        });
+
+        copyAllBtn.onclick = () => {
+            try {
+                const isSmartReplace = document.getElementById('smartReplace').checked;
+                const validMappings = urlMapping.filter(item => item !== null);
+                const validLinks = successLinks.filter(link => link !== null);
+
+                if (isSmartReplace) {
+                    // --- 智慧置換模式 ---
+                    if (!originalFullText) throw new Error("原料烙跑了");
+                    let replacedText = originalFullText;
+                    validMappings.forEach(item => {
+                        if (item) {
+                            // 使用 split/join 進行全域取代，避免同一個網址出現多次沒換到
+                            replacedText = replacedText.split(item.original).join(item.replaceTo);
+                        }
+                    });
+                    copyToClipboard(replacedText, copyAllBtn);
+                } else {
+                    // --- 一般清單模式 ---
+                    copyToClipboard("🍡 我的丸子拼盤：\n" + validLinks.join("\n"), copyAllBtn);
+                }
+            } catch (e) {
+                alert("打包袋破了：" + e.message);
+            }
+        };
+
+        // 處理單一網址邏輯
+        async function processOneUrl(inputUrl) {
+            const useShorten = document.getElementById('useShorten').checked;
+
+            // 生成一個短 ID，例如 "a1b2c"
+            const tid = Math.random().toString(36).substring(7);
+            try {
+                // 呼叫 GAS 取得原網址
+                //const res1 = await axios.get(GAS_URL + "?url=" + encodeURIComponent(inputUrl), { timeout: CF_API_TIMEOUT });
+                // 呼叫 CF 取得原網址
+                //const res1 = await axios.get(CF_WORKER_URL + "?url=" + encodeURIComponent(inputUrl), { timeout: CF_API_TIMEOUT });
+                const res1 = await axios.get(`${CF_WORKER_URL}?url=${encodeURIComponent(inputUrl)}&tid=${tid}`, { timeout: CF_API_TIMEOUT });
+                // 直接使用後端 Worker 回傳的標準化資料
+                const { transformedUrl, typeText, isProduct } = res1.data;
+
+                let displayUrl = "";
+
+                // 判斷是否需要縮址
+                if (useShorten) {
+                    const res2 = await axios.get(GAS_URL + "?url=" + encodeURIComponent(transformedUrl) + "&shorten=true", { timeout: GAS_API_TIMEOUT });
+                    displayUrl = res2.data.shortUrl || transformedUrl;
+                    //displayUrl = finalUrl; //for debug
+                }
+
+                return { displayUrl, transformedUrl, typeText, isProduct, useShorten, tid: tid };
+            } catch (error) {
+                // 捕捉錯誤並包裝 tid 丟出去
+                error.tid = tid;
+                throw error;
+            }
+        }
+
+        async function retryOneBall(url, index, btnElement) {
+            const cardContainer = btnElement.closest('.ball-card');
+            const originalHTML = cardContainer.innerHTML;
+
+            // 1. 進入載入狀態
+            btnElement.disabled = true;
+            btnElement.innerHTML = `⏳重捏中...<span class="spinner-border-custom">🍡</span>`;
+            //await new Promise(resolve => setTimeout(resolve, 1000));
+
+            try {
+                const result = await processOneUrl(url);
+                // 2. 成功後，置換卡片內容為成功樣式
+                cardContainer.className = "ball-card success shadow-sm animate-bounce";
+                cardContainer.innerHTML = renderBallCard(result, index);
+                // 3. 更新全域清單 (如果需要打包的話)
+                const finalNewUrl = result.displayUrl.startsWith('https') ? result.displayUrl : result.transformedUrl;
+                urlMapping[index] = { original: url, replaceTo: finalNewUrl };
+                successLinks[index] = `${result.typeText}：${finalNewUrl}`;
+
+                if (successLinks.some(l => l !== null)) copyAllBtn.style.display = "block";
+
+            } catch (error) {
+                // 4. 失敗則還原按鈕和更新錯誤訊息
+                const randomRetry = RETRY_OOPS_TEXTS[Math.floor(Math.random() * RETRY_OOPS_TEXTS.length)];
+                btnElement.disabled = false;
+                btnElement.innerHTML = `🔄 ${randomRetry}`;
+
+                const tid = error.tid || "N/A";
+                let errorMsg = "重捏失敗：" + error.message + " tid:" + tid;
+                // 檢查是否為超時錯誤
+                if (error.message === "Network Error") {
+                    errorMsg += "\n🍡機器停電，請檢查網路插頭有插好嗎";
+                } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+                    errorMsg += "\n🍡丸子烤焦了，請再試一次！(連線超時)";
+                } else if (error.message.includes("網址追蹤失敗")) {
+                    errorMsg += "\n🍡麵糰沒揉好，請檢查網址是否正確！";
+                }
+
+                // 找到卡片內的錯誤訊息並更新
+                const errorSmall = cardContainer.querySelector('.text-danger');
+                if (errorSmall) errorSmall.innerText = `${errorMsg}`;
+
+            }
+        }
+
+    </script>
+</body>
+
+</html>
